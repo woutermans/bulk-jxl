@@ -23,22 +23,92 @@ struct Args {
     copy_all: bool,
 }
 
-const ACCEPTED_EXTENSIONS: [&str; 17] = [
-    "jpg", "jpeg", // Joint Photographic Experts Group
-    "png",  // Portable Network Graphics
-    "webp", // WebP
-    "gif",  // Graphics Interchange Format
-    "bmp",  // Bitmap
-    "ppm",  // Portable Pixmap
-    "pgm",  // Portable Graymap
-    "pam",  // Portable Anymap
-    "tif", "tiff", // Tagged Image File Format
-    "tga",  // Targa Graphics Format
-    "dds",  // DirectDraw Surface
-    "exr",  // OpenEXR
-    "hdr",  // High Dynamic Range
-    "ico",  // Microsoft Icon
-    "fits", // Flexible Image Transport System
+const ACCEPTED_EXTENSIONS: &[&str] = &[
+    // Joint Photographic Experts Group
+    "jpg", "jpeg", "jpe", "jif", "jfif", "jfi",
+    // Portable Network Graphics
+    "png",
+    // WebP
+    "webp",
+    // Graphics Interchange Format
+    "gif",
+    // Bitmap
+    "bmp", "dib",
+    // Portable Pixmap
+    "ppm",
+    // Portable Graymap
+    "pgm",
+    // Portable Anymap
+    "pam",
+    // Tagged Image File Format
+    "tif", "tiff",
+    // Targa Graphics Format
+    "tga", "icb", "vda", "vst",
+    // DirectDraw Surface
+    "dds",
+    // OpenEXR
+    "exr",
+    // High Dynamic Range
+    "hdr", "pic",
+    // Microsoft Icon
+    "ico",
+    // Flexible Image Transport System
+    "fits",
+    // Alias/Wavefront PIX image
+    "pix",
+    // BRender PIX image
+    "brender_pix",
+    // CompuServe Graphics Interchange Format (GIF) - already included
+    // piped gif sequence - already included
+    // piped hdr sequence - already included
+    // Microsoft Windows ICO - already included
+    // piped j2k sequence (JPEG 2000)
+    "j2k", "jp2", "jpt",
+    // piped jpeg sequence - already included
+    // piped jpegls sequence (JPEG-LS)
+    "jls",
+    // Animated JPEG XL - already included
+    // piped jpegxl sequence - already included
+    // piped pam sequence - already included
+    // piped pbm sequence (Portable Bitmap)
+    "pbm",
+    // piped pcx sequence (PC Paintbrush)
+    "pcx",
+    // piped pfm sequence (Portable FloatMap)
+    "pfm",
+    // piped pgm sequence - already included
+    // piped pgmyuv sequence (Portable Graymap with YUV)
+    "pgmyuv",
+    // piped pgx sequence (JPEG 2000 part 1)
+    "pgx",
+    // piped phm sequence (Portable Half FloatMap)
+    "phm",
+    // piped photocd sequence (Photo CD)
+    "pcd",
+    // piped pictor sequence (Pictor)
+    "pct", "pict",
+    // piped png sequence - already included
+    // piped ppm sequence - already included
+    // piped psd sequence (Adobe Photoshop)
+    "psd",
+    // piped qdraw sequence (QuickDraw)
+    "qdraw",
+    // piped qoi sequence (Quite OK Image)
+    "qoi",
+    // piped sgi sequence (Silicon Graphics Image)
+    "sgi",
+    // piped sunrast sequence (Sun Raster)
+    "ras",
+    // piped tiff sequence - already included
+    // piped vbn sequence (VBN)
+    "vbn",
+    // piped webp sequence - already included
+    // piped xbm sequence (XBM)
+    "xbm",
+    // piped xpm sequence (XPM)
+    "xpm",
+    // piped xwd sequence (XWD)
+    "xwd",
 ];
 
 enum ProcessResult {

@@ -59,20 +59,41 @@ Copy all files (images and others) from `source_files` to `destination_backup`:
 
 ## Supported Image Extensions
 
-The tool currently supports converting the following image formats to JXL:
+The tool supports converting a wide range of image formats to JXL, leveraging the capabilities of ffmpeg. The currently accepted extensions include:
 
-*   jpg, jpeg
-*   png
-*   webp
-*   gif
-*   bmp
-*   ppm
-*   pgm
-*   pam
-*   tif, tiff
-*   tga
-*   dds
-*   exr
-*   hdr
-*   ico
-*   fits
+*   **Joint Photographic Experts Group:** jpg, jpeg, jpe, jif, jfif, jfi
+*   **Portable Network Graphics:** png
+*   **WebP:** webp
+*   **Graphics Interchange Format:** gif
+*   **Bitmap:** bmp, dib
+*   **Portable Pixmap:** ppm
+*   **Portable Graymap:** pgm
+*   **Portable Anymap:** pam
+*   **Tagged Image File Format:** tif, tiff
+*   **Targa Graphics Format:** tga, icb, vda, vst
+*   **DirectDraw Surface:** dds
+*   **OpenEXR:** exr
+*   **High Dynamic Range:** hdr, pic
+*   **Microsoft Icon:** ico
+*   **Flexible Image Transport System:** fits
+*   **Alias/Wavefront PIX image:** pix
+*   **BRender PIX image:** brender_pix
+*   **JPEG 2000:** j2k, jp2, jpt
+*   **JPEG-LS:** jls
+*   **Portable Bitmap:** pbm
+*   **PC Paintbrush:** pcx
+*   **Portable FloatMap:** pfm
+*   **Portable Graymap with YUV:** pgmyuv
+*   **JPEG 2000 part 1:** pgx
+*   **Portable Half FloatMap:** phm
+*   **Photo CD:** pcd
+*   **Pictor:** pct, pict
+*   **Adobe Photoshop:** psd
+*   **QuickDraw:** qdraw
+*   **Quite OK Image:** qoi
+*   **Silicon Graphics Image:** sgi
+*   **Sun Raster:** ras
+*   **VBN:** vbn
+*   **XBM:** xbm
+*   **XPM:** xpm
+*   **XWD:** xwd

@@ -97,3 +97,5 @@ The tool supports converting a wide range of image formats to JXL, leveraging th
 *   **XBM:** xbm
 *   **XPM:** xpm
 *   **XWD:** xwd
+
+Not all extensions are tested.

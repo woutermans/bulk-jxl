@@ -25,7 +25,12 @@ struct Args {
 
 const ACCEPTED_EXTENSIONS: &[&str] = &[
     // Joint Photographic Experts Group
-    "jpg", "jpeg", "jpe", "jif", "jfif", "jfi",
+    "jpg",
+    "jpeg",
+    "jpe",
+    "jif",
+    "jfif",
+    "jfi",
     // Portable Network Graphics
     "png",
     // WebP
@@ -33,7 +38,8 @@ const ACCEPTED_EXTENSIONS: &[&str] = &[
     // Graphics Interchange Format
     "gif",
     // Bitmap
-    "bmp", "dib",
+    "bmp",
+    "dib",
     // Portable Pixmap
     "ppm",
     // Portable Graymap
@@ -41,15 +47,20 @@ const ACCEPTED_EXTENSIONS: &[&str] = &[
     // Portable Anymap
     "pam",
     // Tagged Image File Format
-    "tif", "tiff",
+    "tif",
+    "tiff",
     // Targa Graphics Format
-    "tga", "icb", "vda", "vst",
+    "tga",
+    "icb",
+    "vda",
+    "vst",
     // DirectDraw Surface
     "dds",
     // OpenEXR
     "exr",
     // High Dynamic Range
-    "hdr", "pic",
+    "hdr",
+    "pic",
     // Microsoft Icon
     "ico",
     // Flexible Image Transport System
@@ -63,7 +74,9 @@ const ACCEPTED_EXTENSIONS: &[&str] = &[
     // piped hdr sequence - already included
     // Microsoft Windows ICO - already included
     // piped j2k sequence (JPEG 2000)
-    "j2k", "jp2", "jpt",
+    "j2k",
+    "jp2",
+    "jpt",
     // piped jpeg sequence - already included
     // piped jpegls sequence (JPEG-LS)
     "jls",
@@ -86,7 +99,8 @@ const ACCEPTED_EXTENSIONS: &[&str] = &[
     // piped photocd sequence (Photo CD)
     "pcd",
     // piped pictor sequence (Pictor)
-    "pct", "pict",
+    "pct",
+    "pict",
     // piped png sequence - already included
     // piped ppm sequence - already included
     // piped psd sequence (Adobe Photoshop)
@@ -112,7 +126,10 @@ const ACCEPTED_EXTENSIONS: &[&str] = &[
 ];
 
 enum ProcessResult {
-    Converted { original_size: u64, converted_size: u64 },
+    Converted {
+        original_size: u64,
+        converted_size: u64,
+    },
     Copied,
     Skipped,
     Error(anyhow::Error),
@@ -121,7 +138,8 @@ enum ProcessResult {
 async fn convert_image(
     input_path: &std::path::Path,
     output_file_path: &std::path::Path,
-) -> anyhow::Result<(u64, u64)> { // Changed return type
+) -> anyhow::Result<(u64, u64)> {
+    // Changed return type
     println!(
         "   Converting {} -> {}",
         input_path.display(),
@@ -238,12 +256,18 @@ async fn main() -> anyhow::Result<()> {
         })
         .fold(0, |acc, f| acc + std::fs::metadata(f).unwrap().len());
 
-
     // Print a nice overview of what is going to happen
     println!("{}", "-".repeat(60)); // Simple separator
 
     // Calculate padding for alignment
-    let labels = ["Input", "Output", "Recursive", "Jobs", "Copy All", "Files to process"];
+    let labels = [
+        "Input",
+        "Output",
+        "Recursive",
+        "Jobs",
+        "Copy All",
+        "Files to process",
+    ];
     let max_label_width = labels.iter().map(|s| s.len()).max().unwrap_or(0);
 
     // Print aligned key-value pairs
@@ -322,9 +346,13 @@ async fn main() -> anyhow::Result<()> {
             let _permit = semaphore.acquire().await.unwrap();
 
             let relative_path = file.strip_prefix(&input_base_path)?;
-            let file_extension = file.extension().and_then(std::ffi::OsStr::to_str).unwrap_or("");
+            let file_extension = file
+                .extension()
+                .and_then(std::ffi::OsStr::to_str)
+                .unwrap_or("")
+                .to_lowercase();
 
-            if ACCEPTED_EXTENSIONS.contains(&file_extension) {
+            if ACCEPTED_EXTENSIONS.contains(&file_extension.as_str()) {
                 // This is an image file, attempt conversion
                 let output_file_path = output_base_path.join(relative_path).with_extension("jxl");
 
@@ -339,7 +367,10 @@ async fn main() -> anyhow::Result<()> {
 
                 // Call convert_image and get the sizes
                 match convert_image(&file, &output_file_path).await {
-                    Ok((original_size, converted_size)) => Ok(ProcessResult::Converted { original_size, converted_size }),
+                    Ok((original_size, converted_size)) => Ok(ProcessResult::Converted {
+                        original_size,
+                        converted_size,
+                    }),
                     Err(e) => Ok(ProcessResult::Error(e)), // Wrap error in ProcessResult
                 }
             } else if args.copy_all {
@@ -355,10 +386,14 @@ async fn main() -> anyhow::Result<()> {
                     tokio::fs::create_dir_all(parent).await?;
                 }
 
-                println!("   Copying {} -> {}", file.display(), output_file_path.display());
+                println!(
+                    "   Copying {} -> {}",
+                    file.display(),
+                    output_file_path.display()
+                );
                 match tokio::fs::copy(&file, &output_file_path).await {
-                     Ok(_) => Ok(ProcessResult::Copied),
-                     Err(e) => Ok(ProcessResult::Error(anyhow::anyhow!("Copy failed: {}", e))), // Wrap copy error
+                    Ok(_) => Ok(ProcessResult::Copied),
+                    Err(e) => Ok(ProcessResult::Error(anyhow::anyhow!("Copy failed: {}", e))), // Wrap copy error
                 }
             } else {
                 // This is a non-image file and copy_all is false, skip
@@ -371,35 +406,45 @@ async fn main() -> anyhow::Result<()> {
     while let Some(task_result) = set.join_next().await {
         completed_count += 1; // Increment completed count regardless of task outcome
 
-        match task_result { // Handle the Result from the spawned task (Result<anyhow::Result<ProcessResult>, tokio::task::JoinError>)
-            Ok(process_result_wrapped) => { // Task completed successfully, result is anyhow::Result<ProcessResult>
-                match process_result_wrapped { // Now match on the anyhow::Result<ProcessResult>
-                    Ok(process_result) => { // Task returned Ok(ProcessResult)
-                        match process_result { // Now match on the inner ProcessResult enum
-                            ProcessResult::Converted { original_size, converted_size } => {
+        match task_result {
+            // Handle the Result from the spawned task (Result<anyhow::Result<ProcessResult>, tokio::task::JoinError>)
+            Ok(process_result_wrapped) => {
+                // Task completed successfully, result is anyhow::Result<ProcessResult>
+                match process_result_wrapped {
+                    // Now match on the anyhow::Result<ProcessResult>
+                    Ok(process_result) => {
+                        // Task returned Ok(ProcessResult)
+                        match process_result {
+                            // Now match on the inner ProcessResult enum
+                            ProcessResult::Converted {
+                                original_size,
+                                converted_size,
+                            } => {
                                 converted_count += 1;
                                 total_original_size += original_size;
                                 total_converted_size += converted_size;
-                            },
+                            }
                             ProcessResult::Copied => {
                                 copied_count += 1;
-                            },
+                            }
                             ProcessResult::Skipped => {
                                 skipped_count += 1;
-                            },
+                            }
                             ProcessResult::Error(e) => {
                                 eprintln!("Error processing file: {}", e);
                                 error_count += 1;
                             }
                         }
-                    },
-                    Err(e) => { // Task returned Err(anyhow::Error)
+                    }
+                    Err(e) => {
+                        // Task returned Err(anyhow::Error)
                         eprintln!("Error processing file: {}", e);
                         error_count += 1;
                     }
                 }
-            },
-            Err(e) => { // This branch handles errors from join_next() (e.g., task panic)
+            }
+            Err(e) => {
+                // This branch handles errors from join_next() (e.g., task panic)
                 eprintln!("Task join error: {}", e);
                 error_count += 1; // Count join errors as well
             }
@@ -434,7 +479,6 @@ async fn main() -> anyhow::Result<()> {
         human_bytes::human_bytes(total_saved_size as f64)
     );
     println!("{}", "-".repeat(60));
-
 
     Ok(())
 }

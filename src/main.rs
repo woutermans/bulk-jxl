@@ -25,6 +25,9 @@ struct Args {
 
     #[clap(short, long, default_value_t = 7)]
     effort: u32,
+
+    #[clap(short, long)]
+    yes: bool,
 }
 
 const ACCEPTED_EXTENSIONS: &[&str] = &[
@@ -322,13 +325,15 @@ async fn main() -> anyhow::Result<()> {
     println!(); // Add a blank line for spacing
 
     // Ask the user wether they are sure to proceed
-    let confirmation = inquire::Confirm::new("Are you sure to proceed?")
-        .with_default(false)
-        .prompt()?;
+    if args.yes {
+        let confirmation = inquire::Confirm::new("Are you sure to proceed?")
+            .with_default(false)
+            .prompt()?;
 
-    if !confirmation {
-        println!("Aborting...");
-        return Ok(());
+        if !confirmation {
+            println!("Aborting...");
+            return Ok(());
+        }
     }
 
     let mut set: JoinSet<anyhow::Result<ProcessResult>> = JoinSet::new(); // Updated JoinSet return type

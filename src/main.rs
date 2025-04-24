@@ -325,7 +325,7 @@ async fn main() -> anyhow::Result<()> {
     println!(); // Add a blank line for spacing
 
     // Ask the user wether they are sure to proceed
-    if args.yes {
+    if !args.yes {
         let confirmation = inquire::Confirm::new("Are you sure to proceed?")
             .with_default(false)
             .prompt()?;

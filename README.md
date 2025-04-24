@@ -41,6 +41,7 @@ Run the executable from the project root directory.
 *   `-o, --output <OUTPUT>`: **Required.** The output directory where converted JXL files and copied files will be placed. Directories will be created if they don't exist.
 *   `-r, --recursive`: Process files in subdirectories recursively.
 *   `-j, --jobs <JOBS>`: The number of parallel jobs to run for processing. Defaults to 2.
+*   `-e, --effort <EFFORT>`: The compression effort level for JPEG XL conversion (1-9). Defaults to 7.
 *   `-c, --copy-all`: Copy all files from the input directory to the output directory, not just accepted image types.
 
 ### Example

@@ -236,8 +236,9 @@ async fn main() -> anyhow::Result<()> {
                     .path()
                     .extension()
                     .and_then(std::ffi::OsStr::to_str)
-                    .unwrap_or("");
-                ACCEPTED_EXTENSIONS.contains(&extension)
+                    .unwrap_or("")
+                    .to_lowercase();
+                ACCEPTED_EXTENSIONS.contains(&extension.as_str())
             }
         })
         .map(|e| e.path().to_owned())

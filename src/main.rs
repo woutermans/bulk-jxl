@@ -3,6 +3,7 @@ use std::{process::Stdio, sync::Arc};
 use clap::Parser;
 use filetime::FileTime;
 use human_bytes::human_bytes;
+use indicatif::{ProgressBar, ProgressStyle};
 use tokio::{sync::Semaphore, task::JoinSet};
 
 #[derive(Parser, Clone)]
@@ -21,6 +22,9 @@ struct Args {
 
     #[clap(short, long)]
     copy_all: bool,
+
+    #[clap(short, long, default_value_t = 7)]
+    effort: u32,
 }
 
 const ACCEPTED_EXTENSIONS: &[&str] = &[
@@ -138,6 +142,7 @@ enum ProcessResult {
 async fn convert_image(
     input_path: &std::path::Path,
     output_file_path: &std::path::Path,
+    effort: u32,
 ) -> anyhow::Result<(u64, u64)> {
     // Changed return type
     println!(
@@ -147,9 +152,6 @@ async fn convert_image(
     );
 
     // Convert the image to JXL format using ffmpeg.
-    // Make sure to also copy over all metadata such as EXIF and fs timestamps.
-    // ffmpeg -i input.png -map 0 -c:v libjxl -lossless 1 -effort 7 -map_metadata 0 output.jxl
-
     let mut process = tokio::process::Command::new("ffmpeg")
         .arg("-i")
         .arg(input_path)
@@ -159,7 +161,7 @@ async fn convert_image(
         .arg("libjxl")
         // .arg("-lossless") // Lossless compression
         .arg("-effort")
-        .arg("7") // Compression effort (1-9)
+        .arg(effort.to_string()) // Compression effort (1-9)
         .arg("-map_metadata")
         .arg("0") // Copy metadata from input to output
         .arg(&output_file_path)
@@ -222,6 +224,14 @@ async fn main() -> anyhow::Result<()> {
         walkdir = walkdir.max_depth(1);
     }
 
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(
+        ProgressStyle::default_spinner()
+            .template("{spinner:.green} [{elapsed_precise}] {msg}")
+            .unwrap(),
+    );
+    pb.set_message("Collecting files...");
+
     let files_to_process = walkdir
         .into_iter()
         .filter_map(|e| e.ok())
@@ -241,20 +251,18 @@ async fn main() -> anyhow::Result<()> {
                 ACCEPTED_EXTENSIONS.contains(&extension.as_str())
             }
         })
-        .map(|e| e.path().to_owned())
+        .map(|e| {
+            pb.inc(1);
+            e.path().to_owned()
+        })
         .collect::<Vec<_>>();
 
-    // Initial calculation of total source size for files that *could* be converted
+    pb.finish_with_message(format!("Collected {} files.", files_to_process.len()));
+
+    // Initial calculation of total source size for files that will be processed
     // This is used for the initial overview printout.
-    let initial_convertible_files_size = files_to_process
+    let initial_processed_files_size = files_to_process
         .iter()
-        .filter(|f| {
-            let extension = f
-                .extension()
-                .and_then(std::ffi::OsStr::to_str)
-                .unwrap_or("");
-            ACCEPTED_EXTENSIONS.contains(&extension)
-        })
         .fold(0, |acc, f| acc + std::fs::metadata(f).unwrap().len());
 
     // Print a nice overview of what is going to happen
@@ -303,10 +311,10 @@ async fn main() -> anyhow::Result<()> {
         width = max_label_width
     );
     println!(
-        "{:<width$} : {} (Convertible size: {})",
+        "{:<width$} : {} (Total size: {})",
         "Files to process",
         files_to_process.len(),
-        human_bytes::human_bytes(initial_convertible_files_size as f64),
+        human_bytes::human_bytes(initial_processed_files_size as f64),
         width = max_label_width
     );
 
@@ -353,6 +361,8 @@ async fn main() -> anyhow::Result<()> {
                 .unwrap_or("")
                 .to_lowercase();
 
+            let effort = args.effort;
+
             if ACCEPTED_EXTENSIONS.contains(&file_extension.as_str()) {
                 // This is an image file, attempt conversion
                 let output_file_path = output_base_path.join(relative_path).with_extension("jxl");
@@ -367,7 +377,7 @@ async fn main() -> anyhow::Result<()> {
                 }
 
                 // Call convert_image and get the sizes
-                match convert_image(&file, &output_file_path).await {
+                match convert_image(&file, &output_file_path, effort).await {
                     Ok((original_size, converted_size)) => Ok(ProcessResult::Converted {
                         original_size,
                         converted_size,
